@@ -1,2 +1,16 @@
 # PP-PINN
-Solving partial differential equations based on preconditioning-pretraining physics informed neural network Abstract. Physics informed neural network (PINN) is a deep learning based framework which has been widely used to solve spatial-temporal partial differential equations (PDE) in various fields. Recently, numerical experiments show that the vanilla-PINN meets failures when it is used to solve PDEs with high frequency solution or strong nonlinearity. To improve the performance of PINN, a new strategy named as preconditioning-pretraining physics informed neural network (PP-PINN) is proposed in this work. First, the original task is transformed to a new system with low frequency and weak nonlinearity in a long time scale. Then, we solve the transformed PDEs via the pretraining approach. Furthermore, a new constraint named as “fixed point” is also introduced, which is benefit for the cases with extremely high frequency or strong nonlinearity. To illustrate the performance of our method, three different equations are predicted via the new developed strategy, which show better accuracy and computation cost than previous works. The effectiveness and interpretability of our PP-PINN is also discussed.
+ Physics-Informed Neural Network (PINN) is a deep learning framework that
+ has been widely employed to solve spatial-temporal partial di erential equa
+tions (PDEs) across various elds. However, recent numerical experiments
+ indicate that the vanilla-PINN often struggles with PDEs featuring high
+frequency solutions or strong nonlinearity. To enhance PINNs performance,
+ we propose a novel strategy called the Preconditioning-Pretraining Physics
+Informed Neural Network (PP-PINN). This approach involves transforming
+ the original task into a new system characterized by low frequency and weak
+ nonlinearity over an extended time scale. The transformed PDEs are then
+ solved using a pretraining approach. Additionally, we introduce a new con
+straint termed xed point , which is bene cial for scenarios with extremely
+ high frequency or strong nonlinearity. To demonstrate the e cacy of our
+ method, we apply the newly developed strategy to three di erent equations,achieving improved accuracy and reduced computational costs compared to
+ previous approaches. The e ectiveness and interpretability of our PP-PINN
+ are also discussed.
