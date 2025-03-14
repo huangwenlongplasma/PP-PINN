@@ -69,12 +69,12 @@ def compute_loss(model, x, t, x_data, t_data, real,  beta=20):
 if __name__ == '__main__':
     torch.manual_seed(1234)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_path = torch.load('model/lcctanh20_1.pth')
+    model_path = torch.load('model/lcctanh20_9.pth')
     # 创建随机训练数据集
     num_samples = 1000
     x_train = (2 * np.pi * torch.rand(num_samples, 1)).to(device)
     x_train.requires_grad = True
-    t_train = (2 * torch.rand(num_samples, 1)).to(device)
+    t_train = (10 * torch.rand(num_samples, 1)).to(device)
     t_train.requires_grad = True
 
     # Adam优化器
@@ -84,9 +84,9 @@ if __name__ == '__main__':
     model.to(device)
     learning_rate = 0.001
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
-    num_epochs = 10000
+    num_epochs = 30000
 
-    data = scipy.io.loadmat('data/lcctanh20_pred1.mat')
+    data = scipy.io.loadmat('data/lcctanh20_pred9.mat')
     real = data['u']
     x = data['x'].flatten()[:, None]
     t = data['t'].flatten()[:, None]
@@ -163,7 +163,7 @@ if __name__ == '__main__':
         return loss
 
 
-    optimizer_lbfgs = torch.optim.LBFGS(model.parameters(),  max_iter=8000, max_eval=None, tolerance_grad=0,
+    optimizer_lbfgs = torch.optim.LBFGS(model.parameters(),  max_iter=80000, max_eval=None, tolerance_grad=0,
                                         tolerance_change=0, history_size=100, line_search_fn=None)
     optimizer_lbfgs.step(closure)
     end_time = time.time()
@@ -177,24 +177,25 @@ if __name__ == '__main__':
 #     FP_losses = fp_losses + lbfgs_loss_fp
     plt.figure(figsize=(10, 6))
     plt.yscale('log')
-    plt.plot(Total_losses, label='Total Loss')
-    plt.plot(PDE_losses, label='PDE Loss')
-    plt.plot(IC_losses, label='IC Loss')
-    plt.plot(BC_losses, label='BC Loss')
-    plt.plot(DATA_losses, label='Data Loss')
+    plt.plot(Total_losses, label='Total')
+    plt.plot(PDE_losses, label='PDE')
+    plt.plot(IC_losses, label='IC')
+    plt.plot(BC_losses, label='BC')
+    plt.plot(DATA_losses, label='Data')
 #     plt.plot(FP_losses, label='FP Loss')
     plt.axvline(x=num_epochs, color='grey', linestyle='--', linewidth=1.5)
-    plt.xlabel('Iteration')
-    plt.ylabel('Loss')
-    plt.title('Loss During Training with Adam and L-BFGS')
-    plt.legend()
-    plt.savefig('fig/losstanh20_2.png')
-    plt.savefig('fig/losstanh20_2.pdf')
+    plt.xlabel('Iteration', fontsize=23)
+    plt.ylabel('Loss', fontsize=23)
+    plt.tick_params(axis='both', labelsize=18)  # 同时设置x轴和y轴的刻度字体大小
+    plt.title('Loss During Training with Adam and L-BFGS', fontsize=23)
+    plt.legend(fontsize=16)
+    plt.savefig('fig/losstanh20_10.png')
+#     plt.savefig('fig/losstanh20_10.pdf')
     plt.show()
     # 测试模型
     model.eval()
     x = torch.linspace(0, 2 * torch.pi, 1000)
-    t = torch.linspace(0, 2, 1000)
+    t = torch.linspace(0, 10, 1000)
     X, T = torch.meshgrid(x, t)
     X = X.reshape(-1, 1)
     T = T.reshape(-1, 1)
@@ -211,16 +212,16 @@ if __name__ == '__main__':
 
     # 保存数据
     x = torch.linspace(0, 2 * torch.pi, 1000).to(device)
-    t = torch.linspace(0, 2, 1000).to(device)
+    t = torch.linspace(0, 10, 1000).to(device)
     x = x.unsqueeze(1)
     t = t.unsqueeze(1)
     solution = model(x, t)
-    scipy.io.savemat('data/lcctanh20_pred2.mat',
+    scipy.io.savemat('data/lcctanh20_pred10.mat',
                      {'x': x.cpu().detach().numpy().reshape(-1, 1), 't': t.cpu().detach().numpy().reshape(-1, 1),
                       'u': solution.cpu().detach().numpy().reshape(-1, 1)})
-    t_fp = torch.ones_like(x) * 2
+    t_fp = torch.ones_like(x) * 10
     u_fp = model(x, t_fp)
-    scipy.io.savemat('data/lcctanh20_fp2.mat',
+    scipy.io.savemat('data/lcctanh20_fp10.mat',
                      {'x': x.cpu().detach().numpy().reshape(-1, 1), 't': t_fp.cpu().detach().numpy().reshape(-1, 1),
                       'u': u_fp.cpu().detach().numpy().reshape(-1, 1)})
 
@@ -231,25 +232,43 @@ if __name__ == '__main__':
     plt.figure(figsize=(10, 6))
     plt.pcolormesh(T.cpu().detach().numpy().reshape(1000, 1000), X.cpu().detach().numpy().reshape(1000, 1000),
                    uxt.reshape(1000, 1000), shading='auto', cmap='rainbow')
-    plt.colorbar()
-    plt.xlabel('t')
-    plt.ylabel('x')
+    cbar = plt.colorbar()
+    plt.xlabel('t', fontsize=23)
+    plt.ylabel('x', fontsize=23)
+    plt.tick_params(axis='both', labelsize=18)  # 同时设置x轴和y轴的刻度字体大小
     # plt.ylim(0, 2*np.pi)
-    plt.title('pred')
-    plt.savefig('fig/lcctanh_pred_2.png')
-    plt.savefig('fig/lcctanh_pred_2.pdf')
+    plt.title('Without FP', fontsize=23)
+    cbar.ax.tick_params(labelsize=18)  # 设置色标的数字大小
+    cbar.set_ticks([-1, -0.5, 0, 0.5, 1])
+    cbar.set_ticklabels(['-1', '-0.5', '0', '0.5', '1'])
+    tick_positions = np.linspace(0, 10, num=6)  # 原来的刻度位置
+    tick_labels = [f'{pos / 10:.1f}' for pos in tick_positions]  # 缩小十倍后的标签
+    plt.xticks(tick_positions, tick_labels, fontsize=18)
+    plt.savefig('fig/lcctanh_pred_10.png')
+#     plt.savefig('fig/lcctanh_pred_10.pdf')
     plt.show()
 
     plt.figure(figsize=(10, 6))
     plt.pcolormesh(T.cpu().detach().numpy().reshape(1000, 1000), X.cpu().detach().numpy().reshape(1000, 1000),
                    real_u.reshape(1000, 1000), shading='auto', cmap='rainbow')
-    plt.colorbar()
-    plt.xlabel('t')
-    plt.ylabel('x')
-    plt.title('real')
-    plt.savefig('fig/lcctanh_real_2.png')
-    plt.savefig('fig/lcctanh_real_2.pdf')
+    cbar = plt.colorbar()
+    plt.xlabel('t', fontsize=23)
+    plt.ylabel('x', fontsize=23)
+    cbar.ax.tick_params(labelsize=14)  # 设置色标的数字大小
+    cbar.ax.yaxis.get_offset_text().set_fontsize(18)  # 设置科学计数法偏移量的字体大小
+    cbar.ax.yaxis.get_offset_text().set_horizontalalignment('center')  # 居中对齐科学计数法偏移量
+    cbar.set_ticks([-1, -0.5, 0, 0.5, 1])
+    cbar.set_ticklabels(['-1', '-0.5', '0', '0.5', '1'])
+    plt.tick_params(axis='both', labelsize=14)  # 同时设置x轴和y轴的刻度字体大小
+    tick_positions = np.linspace(0, 10, num=6)  # 原来的刻度位置
+    tick_labels = [f'{pos / 10:.1f}' for pos in tick_positions]  # 缩小十倍后的标签
+    plt.xticks(tick_positions, tick_labels, fontsize=18)
+
+    plt.title('Exact Solution', fontsize=23)
+    plt.savefig('fig/lcctanh_real_10.png')
+#     plt.savefig('fig/lcctanh_real_10.pdf')
     plt.show()
 
-    save_path = 'model/lcctanh20_2.pth'
+    save_path = 'model/lcctanh20_10.pth'
     torch.save(model.state_dict(), save_path)
+
